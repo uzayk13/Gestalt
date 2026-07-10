@@ -1,0 +1,157 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+}
+
+.app-header p {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.mode-toggle {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 3px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.mode-toggle button {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+.mode-toggle button.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.fit-quality-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.fit-family-name {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.canvas-panel {
+  flex: 1 1 60%;
+  min-width: 0;
+  min-height: 400px;
+  aspect-ratio: 1 / 1;
+  max-height: calc(100svh - 140px);
+}
+
+.equation-panel {
+  flex: 1 1 40%;
+  min-width: 260px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.warning-banner {
+  background: rgba(224, 68, 107, 0.1);
+  color: #e0446b;
+  border: 1px solid rgba(224, 68, 107, 0.3);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.equation-display {
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.piecewise-display {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.piecewise-label {
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.piecewise-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Two of these can stack (x(t) and y(t)), so each gets a smaller share. */
+  max-height: calc((100svh - 300px) / 2);
+  overflow-y: auto;
+}
+
+.piecewise-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.piecewise-condition {
+  color: var(--text);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .app-main {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  /* The flex-basis percentages above are tuned for row layout, where the
+     basis refers to width. In column layout the basis refers to height, so
+     they must be reset here or the canvas claims far more vertical space
+     than its own aspect-ratio needs, leaving a dead gap before the panel. */
+  .canvas-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+    max-height: min(calc(100svh - 320px), 500px);
+  }
+
+  .equation-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
