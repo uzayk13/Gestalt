@@ -5,6 +5,9 @@ import { toFunctionOfX } from './toFunctionOfX';
 
 const RESAMPLE_POINTS = 200;
 const SMOOTH_WINDOW = 7;
+// Iterating a small box filter a few times approximates a Gaussian kernel and rejects hand-tremor
+// jitter much better than a single pass, without widening the window (which would blur real corners).
+const SMOOTH_ITERATIONS = 3;
 const GRID_SIZE = 150;
 
 // Below this x-width (out of the fixed [-10,10] math viewport), curve
@@ -31,7 +34,7 @@ export function preprocessStroke(rawPoints: Point[]): PipelineResult {
   }
 
   const resampled = resampleByArcLength(rawPoints, RESAMPLE_POINTS);
-  const smoothed = movingAverage(resampled, SMOOTH_WINDOW);
+  const smoothed = movingAverage(resampled, SMOOTH_WINDOW, SMOOTH_ITERATIONS);
 
   const xs = smoothed.map((p) => p.x);
   if (Math.max(...xs) - Math.min(...xs) < MIN_DOMAIN_WIDTH) {
@@ -71,7 +74,7 @@ export function prepareParametricStroke(rawPoints: Point[]): ParametricStroke | 
   if (rawPoints.length < 2) return null;
 
   const resampled = resampleByArcLength(rawPoints, RESAMPLE_POINTS);
-  const smoothed = movingAverage(resampled, SMOOTH_WINDOW);
+  const smoothed = movingAverage(resampled, SMOOTH_WINDOW, SMOOTH_ITERATIONS);
 
   const xs = smoothed.map((p) => p.x);
   const ys = smoothed.map((p) => p.y);

@@ -77,6 +77,81 @@ describe('movingAverage', () => {
     const points: Point[] = Array.from({ length: 10 }, (_, i) => ({ x: i, y: i * i }));
     expect(movingAverage(points, 5)).toHaveLength(10);
   });
+
+  it('default iterations=1 matches the original single-pass output exactly', () => {
+    const points: Point[] = Array.from({ length: 40 }, (_, i) => ({
+      x: i,
+      y: Math.sin(i / 3) + (i % 2 === 0 ? 0.5 : -0.5),
+    }));
+    const withDefault = movingAverage(points, 7);
+    const withExplicitOne = movingAverage(points, 7, 1);
+    expect(withDefault).toEqual(withExplicitOne);
+  });
+
+  it('iterating the box filter cancels straight-line jitter far more than a single pass', () => {
+    // Deterministic seeded PRNG (mulberry32) so the injected "hand tremor" noise is
+    // reproducible and the test can never flake, unlike unseeded Math.random().
+    function mulberry32(seed: number): () => number {
+      let state = seed;
+      return () => {
+        state |= 0;
+        state = (state + 0x6d2b79f5) | 0;
+        let t = Math.imul(state ^ (state >>> 15), 1 | state);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const rand = mulberry32(42);
+    const jitterAmplitude = 0.15;
+    // Perturb points perpendicular to the line y = 0.5x + 1 (direction (-0.5, 1)/sqrt(1.25))
+    // by uniformly-distributed pseudo-random noise in [-jitterAmplitude, jitterAmplitude].
+    const norm = Math.sqrt(1.25);
+    const points: Point[] = Array.from({ length: 200 }, (_, i) => {
+      const x = i * 0.1;
+      const perpJitter = (rand() * 2 - 1) * jitterAmplitude;
+      return {
+        x: x + (-0.5 / norm) * perpJitter,
+        y: 0.5 * x + 1 + (1 / norm) * perpJitter,
+      };
+    });
+
+    function maxPerpDeviationFromFitLine(pts: Point[]): number {
+      const n = pts.length;
+      const sumX = pts.reduce((a, p) => a + p.x, 0);
+      const sumY = pts.reduce((a, p) => a + p.y, 0);
+      const sumXY = pts.reduce((a, p) => a + p.x * p.y, 0);
+      const sumXX = pts.reduce((a, p) => a + p.x * p.x, 0);
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      const lineNorm = Math.sqrt(slope * slope + 1);
+      return Math.max(...pts.map((p) => Math.abs(slope * p.x - p.y + intercept) / lineNorm));
+    }
+
+    const rawDeviation = maxPerpDeviationFromFitLine(points);
+    const singlePass = movingAverage(points, 7, 1);
+    const iterated = movingAverage(points, 7, 3);
+    const singlePassDeviation = maxPerpDeviationFromFitLine(singlePass);
+    const iteratedDeviation = maxPerpDeviationFromFitLine(iterated);
+
+    // The iterated filter should leave noticeably less residual jitter than a single pass, and
+    // both should be well below the raw injected jitter amplitude.
+    expect(iteratedDeviation).toBeLessThan(singlePassDeviation * 0.85);
+    expect(iteratedDeviation).toBeLessThan(rawDeviation * 0.4);
+  });
+
+  it('preserves most of the peak-to-peak amplitude of a genuine sine curve', () => {
+    const points: Point[] = Array.from({ length: 150 }, (_, i) => {
+      const x = (i / 149) * 2 * Math.PI;
+      return { x, y: Math.sin(x) };
+    });
+    const rawAmplitude = Math.max(...points.map((p) => p.y)) - Math.min(...points.map((p) => p.y));
+    const smoothed = movingAverage(points, 7, 3);
+    const smoothedAmplitude =
+      Math.max(...smoothed.map((p) => p.y)) - Math.min(...smoothed.map((p) => p.y));
+
+    expect(smoothedAmplitude).toBeGreaterThan(rawAmplitude * 0.8);
+  });
 });
 
 describe('toFunctionOfX', () => {
