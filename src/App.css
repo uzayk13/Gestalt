@@ -98,6 +98,12 @@
   padding: 4px 0;
 }
 
+.equation-display-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
 .piecewise-display {
   display: flex;
   gap: 10px;
@@ -106,7 +112,30 @@
 }
 
 .piecewise-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.copy-button {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.row-copy-button {
+  margin-left: auto;
   flex-shrink: 0;
 }
 
