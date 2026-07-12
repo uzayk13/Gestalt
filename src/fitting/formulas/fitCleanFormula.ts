@@ -1,10 +1,13 @@
 import type { CleanFormulaCandidate, CleanFormulaFitResult } from '../../types';
+import { compositeFamily } from './families/composite';
 import { exponentialFamily } from './families/exponential';
 import { gaussianFamily } from './families/gaussian';
+import { logarithmFamily } from './families/logarithm';
 import { polynomialFamilies } from './families/polynomial';
 import { powerFamily } from './families/power';
 import { rationalFamily } from './families/rational';
 import { sineFamily } from './families/sine';
+import { tangentFamily } from './families/tangent';
 import { compositeScore, nrmse } from './scoring';
 import type { FamilyFitter } from './types';
 
@@ -17,6 +20,9 @@ const ALL_FAMILIES: FamilyFitter[] = [
   powerFamily,
   rationalFamily,
   gaussianFamily,
+  logarithmFamily,
+  tangentFamily,
+  compositeFamily,
 ];
 
 export function fitCleanFormula(xs: number[], ys: number[]): CleanFormulaFitResult | null {

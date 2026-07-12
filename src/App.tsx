@@ -74,10 +74,14 @@ function App() {
       };
     }
     if (preprocessedForFunctions && preprocessedForFunctions.xs.length >= 2 && cleanFormulaFit) {
-      const xs = preprocessedForFunctions.xs;
-      const xDomain: [number, number] = [xs[0], xs[xs.length - 1]];
+      // Deliberately unclipped: Clean Formula mode extrapolates the fitted
+      // function across the full math viewport rather than just the
+      // stroke's own x-range, even though some families (cubic, sine,
+      // tangent) may extrapolate wildly outside where the user actually
+      // drew. drawFunctionCurve already defaults to the full viewport when
+      // no xDomain is passed.
       return (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-        drawFunctionCurve(ctx, width, height, cleanFormulaFit.best.predict, { xDomain });
+        drawFunctionCurve(ctx, width, height, cleanFormulaFit.best.predict);
       };
     }
     return undefined;
